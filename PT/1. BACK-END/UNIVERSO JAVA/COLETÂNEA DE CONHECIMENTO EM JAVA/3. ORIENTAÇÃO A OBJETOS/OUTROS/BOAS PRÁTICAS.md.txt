@@ -1,0 +1,304 @@
+#### Foque em alta coesão e baixo acoplamento
+
+Classes **não** coesas e com forte acoplamento possuem muitas características que não condizem com suas responsabilidades originárias e primárias, o que as tornam inchadas e complexas. Este fator causa insucesso nos projetos e pode ser comprovado quando os atributos, para conseguirem representar suas utlidades, possuem nomes mais detalhados:
+
+```
+// Exemplo de Classe Não Coesa:
+public class Venda {	
+	private String nomeCliente;
+	private String cpfCliente;
+	private String enderecoEntrega;
+	private int cep;
+	private Debito pagamento;
+	private Produto[] produtos;
+	private String nomeVendedor;
+	private double comissaoVendedor;
+}
+```
+
+
+
+Classes Coesas fazem uso de associações e naturalmente possuem um baixo acoplamento, o que ainda não é o caso do exemplo abaixo, pois a **classe Venda** depende fortemente da **classe Débito**. Se **Venda** precisar de outra forma de pagamento será necessário realizar uma grande alteração para que essa nova modalidade seja implementada. No caso em questão,  a mudança seria a de criar uma classe para crédito e outra para financiamento.
+
+```
+// Exemplo de Classe Quase Coesa:
+public class Venda {
+	private Cliente cliente;
+	private Endereco endereco;
+	private Debito pagamento;
+	private Produto[] produtos;
+	private Vendedor vendedor;
+}
+```
+
+
+
+A melhor maneira de tornar a classe acima coesa é evitando altos níveis de dependência, tornando os acoplamentos passíveis de manuteções de baixo ou nenhum impacto. Para isso, basta criar uma classe abstrata ou uma interface, pois assim, a **classe Venda** não dependeria diretamente da **classe Débito, Cartão**, etc, e sim de um pagamento genérico, apto às todas (ou quase todas) necessidades.
+
+![](C:\Users\tyler.souza\Downloads\ESTUDOS\JAVA\JAVA\1.PNG)
+
+De acordo com o diagrama acima, à qualquer momento a forma de pagamento pode ser mudada sem afetar a **classe Venda**, pois esta depende apenas da **classe Pagamento**, que pode ser do tipo **Debito, Cartao, Financiamento** ou outro.
+
+
+
+
+
+#### Use Strings somente quando necessário, e ainda sim, evite
+
+O uso indiscriminado de **"Strings"** na definição de atributos não é uma boa prática. Eis algumas justificativas quanto ao exemplo abaixo:
+
+```
+// Exemplo de uso indiscriminado de Strings: 
+public class Cliente {
+	private String nome;				
+	private String dataAniversario;
+	private String sexo;
+	private String endereco;
+}
+```
+
+
+
+```
+// Exemplo de uso adequadp de Strings e demais correções: 
+public class Cliente {
+	private String nome;
+	private Date dataAniversario;
+	private Sexo sexo;
+	private Endereco endereco;
+}
+```
+
+
+
+* Utilizar **"String"** para o atributo **"Sexo"** não é adequado, pois permite que o usuário digite livremente, circunstância que não assegura ao sistema que o mesmo não inserirá um valor diferente do sugerido(Masculino/Feminino). Além disso, obrigatoriamente, validações precisariam ser feitas para averiguar e tratar o que foi escrito pelo usuário. E isso é desnecessário.  Para essa situação, o uso do **tipo "Enum"** seria a melhor opção, pois este tipo de dado criaria um conjunto fixo, limitado e predeterminado de opções, que **evitaria** valores diferentes dos disponiilizados pelo mesmo.
+
+
+
+* Não é recomendado o uso de **"Spring"** para o atributo **"Endereco"**, pois o mesmo divide-se em logradouro , número, bairro, cidade, cep, etc. E cada um desses dados possui um **tipo**, e eles precisam e devem ser distintos. Além disto, o atributo **'Endereco"** não é uma característica direta de da **classe Cliente**, mas sim da **Classe Endereco**, que deve ser associada a **classe Cliente**. 
+
+
+
+
+
+#### Crie métodos com cautela e extrema atenção
+
+Os **Métodos** são os mais trabalhados durante e após o processo de desenvolvimento, e devido a isto, exigem maior cuidado quanto as seguintes características:
+
+###### 
+
+**Tamanho**
+
+Recomenda-se que os métodos quando grandes, sejam divididos em métodos menores, pois isso facilita o entendimento. 
+
+
+
+**Repetição de Código**
+
+Revise constantemente os métodos e busque sempre simplificá-los para mantê-los ivres de redundâncias, fáceis de se entender, e consequentemente, de realizar manutenções.
+
+
+
+**Parâmetros**
+
+Quando as classes tiverem os seus valores exprimidos por objetos, use-os como parâmetros e **não** seus atributos, pois quanto mais se usam parâmetros desassociados e em grande quantidade, mais acoplamento se cria com este método. E, se algum dia um novo parâmetro tiver de ser adicionado, provavelmente, será necessário corrigir vários pontos da aplicação. Entretanto, se um objeto cliente for passado, as chamadas a este método ficarão intactas. Bastará fazer a manutenção requerida no método que recebe este parâmetro e o preenchimento do novo atributo onde for necessário.
+
+```
+// Forma inadequada de usar os parâmetros:
+public class RelatorioCliente {
+...
+	public byte[] pedidosCliente(String cpfCliente, String nomeCliente, String 
+	nomeUsuarioLogado, String matriculaUsuarioLogado, Date dataInicial, Date dataFinal, 
+	String tipoRelatorio) {
+// Forma adequada de usar os parâmetros:
+public class RelatorioCliente {
+...
+	public byte[] pedidosCliente(Cliente cliente, UsuarioLogado usuario, Date  
+	dataInicial, Date dataFinal, String tipoRelatorio) {
+```
+
+
+
+#### **Conheça coleções e saiba quando usá-las**
+
+Com o intuito de manter simples e de alto nível a **estrutura de Java Orientado a Objetos**, foram criadas classes específicas,  vulgo **coleções**:
+
+
+
+**Listas (ArrayList)**
+
+Devido ao fato dos **vetores(arrays)** possuírem tamanhos fixos, dificuldades quanto pesquisas e controles de inserção de itens, adotaram-se as **listas**, que expandem-se de acordo com a necessidade, e  também, incluem de forma simplicada, pois não há necessidade de fazer uma cópia de uma lista para outra.
+
+```
+import java.util.ArrayList;
+public class ExemploLista {
+		
+		public static void main(String[] args) {
+		
+		// (0) Criação da lista "listaNomes".
+		ArrayList<Aluno> listaNomes = new ArrayList<>();
+		
+		// (1) Três itens são acrescentados na "listaNomes", para em seguida serem exibidos.
+		listaNomes.add(new Aluno("Fulnano"));
+		listaNomes.add(new Aluno("Cicrano"));
+		listaNomes.add(new Aluno("Beltrano"));
+		System.out.println(listaNomes.size());
+		// (2) "For" percorre as coleções, logo, a "listaNomes", para depois, exibi-la. 
+		for(String item: listaNomes) {
+		System.out.println(item.getNome());
+		}
+		// (3) Verifica se dentro da "listaNomes" existe o item "Cicrano".
+		System.out.println(listaNomes.contains(new Aluno("Cicrano")));
+		
+		// (4) O item "Cicrano" e o que está na posição "1" são removidos. 
+		listaNomes.remove(new Aluno("Cicrano"));
+		listaNomes.remove(1);
+		System.out.println(listaNomes.size());
+		// (5)
+		for(Aluno item: listaNomes) {
+		System.out.println(item);
+		
+```
+
+
+
+**Mapas (HashMap e HashTable)**
+
+As coleções **HashMap**  e  **HashTable** fazem uso do princípio de **chave/valor**:  o item é armazenado, e junto a ele um **identificador único** . 
+
+```
+// Exemplo de Uso de "HashMap":
+import java.util.HashMap;
+public class ExemploMapa {
+	
+	public static void main(String[] args) {
+	// (0) Criação do Mapa "map".
+	HashMap<String, Aluno> map = new HashMap<>();
+	// (1) Três itens são acrescentados em "map", e em seguida, sua capacidade é apresentada.
+	map.put("A1", new Aluno("Fulano"));
+	map.put("A2", new Aluno("Cicrano"));
+	map.put("A3", new Aluno("Beltrano"));
+	System.out.println(map.size());
+	// (2) Verifica se existe a chave "A3" em "map".
+	System.out.println(map.containsKey("A3"));
+	// (3) Verifica se em "map" existe o valor "Beltrano".
+	System.out.println(map.containsValue(new Aluno("Beltrano")));
+	// (4) "For" percorre as coleções, logo, "map", para depois, exibi-la. 
+	for (Aluno aluno : map.values()) {
+	System.out.println(aluno.getNome());
+	}
+	// (5) A chave "A2" é removida.
+	map.remove("A2");
+	System.out.println(map.size());
+	// (6) Acessa um valor diferente em "map".
+	System.out.println(map.get("A1"));
+	System.out.println(map.get("A1").getNome());
+	
+	}
+}
+```
+
+
+
+**Conjuntos**
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### Sobrescreva Equals, HashCodes e Tostrings
+
+Para **evitar resultados indesejados**, sobreescreva os métodos **Equals, HashCodes e Tostrings**, pois senão:
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### ÀS VEZES É MELHOR ASSOCIAR EM VEZ DE HERDAR
+
+A maioria dos iniciantes em programação orientada a objetos
+pensa que a herança é a principal forma de reúso. Mas, na verdade, a
+real função da herança não é possibilitar o reúso, mas sim criar
+subtipos. E isso já tinha sido dito antes.
+
+Não ter esta percepção de reúso sem herança gera situações
+como a descrita a seguir: um programador está implementando um
+site de vendas e chegou o momento dele codificar o carrinho de
+compras. Como neste serão armazenados vários produtos, é muito
+comum iniciantes fazerem a seguinte codificação:
+
+//Java
+public class carrinhoCompras extends ArrayList {
+...
+}
+
+Embora possa parecer a melhor opção devido ao ArrayList
+possibilitar o armazenamento de vários objetos, sendo justamente
+isto o que o carrinho faz, além de se poder reusar todas as
+facilidades de manipulação de objetos (como inserir, excluir,
+
+atualizar, entre outras), ao se fazer uma análise mais profunda,
+vários erros surgem. Estes serão apresentados a seguir.
+
+
+
+Um carrinho de compras não é uma lista. Devemos lembrar de
+que herança é para criar subtipos. O reúso é uma consequência do
+uso de herança. A herança tem como principal finalidade a criação
+de subtipos.
+Quando uma classe herda da outra, ele se torna uma versão mais
+específica de sua superclasse. Com isso, ela tem acesso a alguns de
+seus métodos e, infelizmente, ao seu estado. Isto é uma grave quebra
+de encapsulamento.
+Classes como ArrayList em Java são feitas para serem
+usadas de forma que sua complexidade interna seja desprezada. Ao
+se ter acesso à sua implementação, acessos indevidos podem ser
+possibilitados, o que pode gerar comportamentos inesperados.
+Embora seja um conceito importante e que deve ser usado, a
+herança gera um alto acoplamento. Uma subclasse é filha de sua
+superclasse, dependendo fortemente dela para existir. Caso
+alterações sejam feitas na classe mãe, as filhas serão afetadas e, mais
+uma vez, comportamentos inesperados podem surgir.
+
+Parece que herança não é bom e deve ser evitada. Errado. Na
+verdade, a herança deve ser usada no lugar certo e na hora certa.
+Como dito: ela é para criar subtipos, o reúso é uma das consequências (boas) de se usá-la.
+
+Em situações como a citada anteriormente, nas quais
+precisamos de reúso — mas não há a relação de "é um", e sim uma
+relação de "usa um", "precisa de um" —, a associação é muito
+melhor. Na verdade, é a única opção. Assim, não há quebra
+semântica, pois um carrinho de compra precisa de uma lista de
+produtos, e não é uma. Um carrinho não precisa saber como é o
+processo de armazenamento dos produtos na lista, ele somente quer
+armazená-los.
+
+As listas, no caso ArrayList ou List , sofrerem alterações
+devido às suas linguagens, e estas devem ser transparentes para
+quem as usam. Com isto, note que neste caso a associação tornou o
+código muito mais orientado a objeto, mais flexível e menos
+acoplado. A seguir, veja como o código ficaria com tal melhoria:
+
+//Java
+public class CarrinhoCompras {
+private ArrayList<produto> produtos;
+...
+}
+
+216
